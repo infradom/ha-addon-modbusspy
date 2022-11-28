@@ -25,3 +25,15 @@ By default, the addon will publish the data on tcp/502 externally (tcp/5020 inte
 Once the configuration is verified, go back to the main page and start the addon.
 By default, the log level is warning, so it will not be very verbose
 
+# use
+Any system or integration that talks modbus to a tcp port (502 by default) can now read the captured registers.
+This has been tested with the wills106/homeassistant-solax-modbus integration.
+
+# advanced use - static holding register declarations
+Some applications may need registers that are not being polled by the master system.
+Such registers can be declared in a static way in the configuration page by specifying the static_holding_json config entry:
+
+static_holdings_json: '{ "0": "H34T0800000000", "7": [18483, 13396, 13344, 12336 , 12336, 12336, 12336, 0] }'
+
+The declaration above declares a 14 character string (7 registers) at address 0, and 8 registers at address 7.
+Typical use is to declare a serial number.
