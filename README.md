@@ -32,6 +32,13 @@ By default, the log level is warning, so it will not be very verbose
 Any system or integration that talks modbus to a tcp port (502 by default) can now read the captured registers.
 This has been tested with the wills106/homeassistant-solax-modbus integration.
 
+## supported requests
+The addon currently intercepts the calls:
+- read_holding_registers
+- read_input_registers
+
+The response registers will be published as input or holding registers on the tcp modbus interface.
+
 # advanced use - static holding register declarations
 Some applications may need registers that are not being polled by the master system.
 Such registers can be declared in a static way in the configuration page by specifying the static_holding_json config entry:
