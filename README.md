@@ -6,7 +6,10 @@ So that integrations that connect to modbus/TCP can use the captured data
 
 # required hardware
 Typically a low cost (<3 €) USB to RS485 can be connected in parallel to an existing Master-Slave connection.
-Make sure to connect the A lead to the A lead and the B lead to the B lead.
+Make sure to connect not to swap the A and B leads:
+- the A lead to the A lead 
+- the B lead to the B lead.
+
 This addon will only listen to the bus and will not write messages to the bus.
 The addon captures both directions: Master->Slave and the response Slave->Master
 
