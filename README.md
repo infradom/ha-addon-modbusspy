@@ -4,8 +4,10 @@ This addon spies on a serial Modbus RTU link
 It publishes the captured information on a modbus TCP server port
 So that integrations that connect to modbus/TCP can use the captured data
 
-# required hardware
+# Required hardware
 Typically a low cost (<3 €) USB to RS485 can be connected in parallel to an existing Master-Slave connection.
+![image](https://user-images.githubusercontent.com/11804014/204291048-0f7ec71e-9c80-4110-b74f-be5e0f8521e4.png)
+
 Make sure not to swap the A and B leads:
 - the A lead to the A lead 
 - the B lead to the B lead.
@@ -13,14 +15,14 @@ Make sure not to swap the A and B leads:
 This addon will only listen to the bus and will not write messages to the bus.
 The addon captures both directions: Master->Slave and the response Slave->Master
 
-# installation
+# Installation
 Copy the ha-addon-modbusspy directory tree to your HomeAssistants /addons directory.
 You may have to restart the host (not only the HA core) in order to make the addon visible.
 After restart, go to settings->addons and to to the addon store.
 The addon should be visible under de local addons.
 Install it. This may take a while.
 
-# configuration
+# Configuration
 Go back to the settings->addons page.
 Select the ha-addon-modbusspy and go to the configuration tab.
 Select the proper serial port and baudrate.
@@ -28,18 +30,18 @@ By default, the addon will publish the data on tcp/502 externally (tcp/5020 inte
 Once the configuration is verified, go back to the main page and start the addon.
 By default, the log level is warning, so it will not be very verbose
 
-# use
+# Usage
 Any system or integration that talks modbus to a tcp port (502 by default) can now read the captured registers.
 This has been tested with the wills106/homeassistant-solax-modbus integration.
 
-## supported requests
+## Supported requests
 The addon currently intercepts the calls:
 - read_holding_registers
 - read_input_registers
 
 The response registers will be published as input or holding registers on the tcp modbus interface.
 
-# advanced use - static holding register declarations
+# Advanced use - static holding register declarations
 Some applications may need registers that are not being polled by the master system.
 Such registers can be declared in a static way in the configuration page by specifying the static_holding_json config entry:
 
