@@ -1,0 +1,7 @@
+pyserial
+pymodbus
+asyncio
+pyserial_asyncio
+
+
+

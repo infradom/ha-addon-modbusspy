@@ -1,0 +1,36 @@
+name: "Addon ModbusSpy"
+description: "My HA modbus spy add-on!"
+version: "1.0.25"
+slug: "ha_addon_modbus_spy"
+init: false
+uart: true
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+startup: before
+ports:
+  5020/tcp: 502
+devices:
+  - /dev/serial/by-id/usb-1a86_USB2.0-Ser_-if00-port0
+privileged: [SYS_ADMIN]
+options:
+  loglevel: "warning"
+  baud: "19200"
+  device: "/dev/serial/by-id/usb-1a86_USB2.0-Ser_-if00-port0"
+  resync_gap: 0.1
+  tcpport: 5020
+  static_holdings_json: '{ "0": "H34T0800000000", "7": [18483, 13396, 13344, 12336 , 12336, 12336, 12336, 0] }'
+  #pubkey: "ssh-rsa ReplaceByYourPublicKey modbusspy"
+schema:
+  device: "device(subsystem=tty)"
+  baud: "list(9600|19200|38400|57600|115200)"
+  loglevel: "list(error|warning|info|debug)"
+  resync_gap: "float"
+  tcpport : "int"
+  static_holdings_json: "str?"
+  #pubkey: "str?"
+
+  
