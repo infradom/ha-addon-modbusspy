@@ -30,10 +30,10 @@ Install it. This may take a while.
 
 ## As a HAOS addon (recommended)
 Go back to the settings->addons page.
+Select the ha-addon-modbusspy and go to the configuration tab.
 
 <img width="458" alt="image" src="https://user-images.githubusercontent.com/11804014/204327933-e9ac0ef4-940d-4c2f-9c52-6f63163cfb20.png">
 
-Select the ha-addon-modbusspy and go to the configuration tab.
 Select the proper serial port and baudrate.
 By default, the addon will publish the data on tcp/502 externally (tcp/5020 internal)
 Once the configuration is verified, go back to the main page and start the addon.
