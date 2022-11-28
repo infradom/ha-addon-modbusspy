@@ -1,4 +1,4 @@
-# ha-addon-modbusspy
+# Serial Modbus Spy - Publish captured data as Modbus TCP server
 
 This addon spies on a serial Modbus RTU link
 It publishes the captured information on a modbus TCP server port
