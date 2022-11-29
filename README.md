@@ -41,7 +41,7 @@ By default, the log level is warning, so it will not be very verbose
 
 ## Other configurations
 The software can be run with the command python3 ha-addon-modbusspy.py
-It will try to access a configuration file under /data/options.json
+It will try to access a configuration file under /data/options.json or if that fails, it will try to load options.json simply in the working directory
 
 > {
 >  "loglevel": "warning",
