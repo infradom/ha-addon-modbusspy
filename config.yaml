@@ -1,6 +1,6 @@
 name: "Addon ModbusSpy"
 description: "My HA modbus spy add-on!"
-version: "1.0.25"
+version: "1.0.26"
 slug: "ha_addon_modbus_spy"
 init: false
 uart: true
@@ -17,7 +17,7 @@ devices:
   - /dev/serial/by-id/usb-1a86_USB2.0-Ser_-if00-port0
 privileged: [SYS_ADMIN]
 options:
-  loglevel: "warning"
+  loglevel: "info"
   baud: "19200"
   device: "/dev/serial/by-id/usb-1a86_USB2.0-Ser_-if00-port0"
   resync_gap: 0.1

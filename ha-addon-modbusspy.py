@@ -75,7 +75,6 @@ cur_hr_len = 0
 cur_ir_address = None
 cur_ir_len = 0
 
-_logger = logging.getLogger(__name__) # JCO
 
 class myModbusRtuFramer(ModbusRtuFramer):
 
@@ -107,7 +106,7 @@ class myModbusRtuFramer(ModbusRtuFramer):
         single = kwargs.get("single", False)
         while True:
             if self.isFrameReady():
-                _logger.debug(f"frame is ready: header: {self._header} frame: {self._buffer}")
+                log.debug(f"frame is ready: header: {self._header} frame: {self._buffer}")
                 if self.checkFrame():
                     if self._validate_unit_id(unit, single):
                         self._process(self.callback)
@@ -115,16 +114,16 @@ class myModbusRtuFramer(ModbusRtuFramer):
                     else:
                         header_txt = self._header["uid"]
                         txt = f"Not a valid unit id - {header_txt}, ignoring!!"
-                        _logger.warning(txt)
+                        log.warning(txt)
                         self.resetFrame()
                         break
                 else:
-                    _logger.warning(f"Frame check failed, ignoring!! JCO {self._buffer}")
+                    log.warning(f"Frame check failed, ignoring!! JCO {self._buffer}")
                     self.resetFrame()
                     oosync = True
                     break
             else:
-                _logger.debug(f"Frame - not ready - buffer: {self._buffer}")
+                log.debug(f"Frame - not ready - buffer: {self._buffer}")
                 break
         return oosync
 
@@ -200,7 +199,7 @@ class SerialSnooper(asyncio.Protocol):
 
 
     def connection_lost(self, exc):
-        log.indo('serial port closed')
+        log.info('serial port closed')
         self._transport.loop.stop()
 
     def pause_writing(self):
@@ -240,7 +239,8 @@ class SerialSnooper(asyncio.Protocol):
                 t4 = ""
             arg += 1
             t5 = f'{arg}/{len(args)}'
-            log.info(f"{t1} {t2} {t3} {t4} {t5}")
+            if msg.function_code in (3, 4,): log.debug(f"{t1} {t2} {t3} {t4} {t5}")
+            else: log.info(f"{t1} {t2} {t3} {t4} {t5}")
 
 
     def slave_packet_callback(self, *args, **kwargs):
@@ -263,15 +263,15 @@ class SerialSnooper(asyncio.Protocol):
                 t4 = f"Data: {msg.registers}"
                 if (msg.function_code == 3) and (cur_hr_len == count): 
                     hr_datablock.setValues(cur_hr_address+1, msg.registers)
-                    log.info(f"hr datablock set: 0x{cur_hr_address:2x} {msg.registers}")
+                    log.debug(f"hr datablock set: 0x{cur_hr_address:2x} {msg.registers}")
                 if (msg.function_code == 4) and (cur_ir_len == count): 
                     ir_datablock.setValues(cur_ir_address+1, msg.registers)
-                    log.info(f"ir datablock set: 0x{cur_ir_address:2x} {msg.registers}")
+                    log.debug(f"ir datablock set: 0x{cur_ir_address:2x} {msg.registers}")
             except AttributeError:
                 t4 = ""
             arg += 1
             t5 = f'{arg}/{len(args)}'
-            log.info(f"{t1} {t2} {t3} {t4} {t5}")
+            log.debug(f"{t1} {t2} {t3} {t4} {t5}")
         log.debug(f"slave callback kwargs {kwargs}")
 
     def read_raw(self, n=BLOCKSIZE):
@@ -366,13 +366,16 @@ def convert_to_wrds(value):
         return value #hr_datablock.setValues(key+1, value)
     else: log.error(f'invalid static_holdings_json: expecting {{ "14" : [1, 2], "15": "AB" }} structure')
 
+
+
 if __name__ == "__main__":
     logging.basicConfig(format=FORMAT)
     log = logging.getLogger()
     log.setLevel(logging.INFO)
 
     BAUD = 9600
-    f = open("/data/options.json")
+    try: f = open("/data/options.json")
+    except: f = open("options.json")  # for running in a random environment
     config = json.load(f)
     BAUD = config['baud']
     DEVICE = config['device']
