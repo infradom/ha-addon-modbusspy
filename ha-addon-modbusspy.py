@@ -61,6 +61,8 @@ FORMAT = ('%(asctime)-15s %(threadName)-15s'
 
 BLOCKSIZE = 256
 RESYNC_GAP = 0.1 # required intermessage gap (s) prior to a resync attempt
+LOG_INFO_READ = False
+LOG_INFO_WRITE = False
 
 
 hr_datablock = ModbusSequentialDataBlock.create()
@@ -240,7 +242,8 @@ class SerialSnooper(asyncio.Protocol):
             arg += 1
             t5 = f'{arg}/{len(args)}'
             if msg.function_code in (3, 4,): log.debug(f"{t1} {t2} {t3} {t4} {t5}")
-            else: log.info(f"{t1} {t2} {t3} {t4} {t5}")
+            else: 
+                if LOG_INFO_WRITE: log.info(f"{t1} {t2} {t3} {t4} {t5}")
 
 
     def slave_packet_callback(self, *args, **kwargs):
@@ -271,7 +274,7 @@ class SerialSnooper(asyncio.Protocol):
                 t4 = ""
             arg += 1
             t5 = f'{arg}/{len(args)}'
-            log.debug(f"{t1} {t2} {t3} {t4} {t5}")
+            if LOG_INFO_READ: log.info(f"{t1} {t2} {t3} {t4} {t5}")
         log.debug(f"slave callback kwargs {kwargs}")
 
     def read_raw(self, n=BLOCKSIZE):
@@ -380,6 +383,7 @@ if __name__ == "__main__":
     BAUD = config['baud']
     DEVICE = config['device']
     LOGLEVEL = config['loglevel']
+    INFO_LOG = config['info_log']
     RESYNC_GAP = config['resync_gap'] 
     TCPPORT = config['tcpport']
     STATIC_HOLDINGS = config['static_holdings_json']
@@ -388,6 +392,11 @@ if __name__ == "__main__":
     if LOGLEVEL == 'debug': log.setLevel(logging.DEBUG)
     if LOGLEVEL == 'warning': log.setLevel(logging.WARNING)
     if LOGLEVEL == 'info': log.setLevel(logging.INFO)
+    if INFO_LOG in ('read', 'both',): LOG_INFO_READ = True
+    if INFO_LOG in ('write', 'both', ): LOG_INFO_WRITE = True
+    if LOGLEVEL == 'debug': 
+        LOG_INFO_READ = True
+        LOG_INFO_WRITE = True
 
     # initialize static holding registers
     STATIC_HOLDINGS = json.loads(STATIC_HOLDINGS)
