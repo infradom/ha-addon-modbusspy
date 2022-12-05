@@ -1,6 +1,6 @@
 name: "Addon ModbusSpy"
 description: "My HA modbus spy add-on!"
-version: "1.0.28"
+version: "1.0.37"
 slug: "ha_addon_modbus_spy"
 init: false
 uart: true

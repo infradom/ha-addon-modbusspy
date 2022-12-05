@@ -171,6 +171,7 @@ class SerialSnooper(asyncio.Protocol):
 
         self.idle = 0 # unknown
         self.oosync = True # out of sync
+        self.oosync_startts = 0
         self.lastts = time.time()
         #JCO self.response_framer = myModbusRtuFramer(decoder=ClientDecoder())
         #JCO self.request_framer = myModbusRtuFramer(decoder=ServerDecoder())
@@ -188,13 +189,19 @@ class SerialSnooper(asyncio.Protocol):
         ts = time.time()
         if len(data):
             self.idle = 0
-            self.oosync =  self.oosync and ((ts - self.lastts) < RESYNC_GAP)
-            if self.oosync:
-                log.info(f"ignoring out of sync data: {data[:10]}")
-                #self.oosync = (ts - self.lastts) <0.3 #< 3*(1*10) / float(baud) 
+            gap =  ((ts - self.lastts) > RESYNC_GAP)
+            if self.oosync:  
+                if gap: 
+                    log.info(f"gap detected; trying to resync with {data}")
+                    self.process(data)
+                else: 
+                    duration = ts - self.oosync_startts
+                    if duration < 3.0: log.debug(f"ignoring out of sync data: {data[:10]} duration: {duration}")
+                    else: log.info(f"ignoring out of sync data: {data[:10]} duration: {duration}")
             else:
                 log.debug(f"potential start of frame or continuation data {data}")
-                self.oosync = self.process(data)
+                self.process(data)
+                #self.oosync = (ts - self.lastts) <0.3 #< 3*(1*10) / float(baud) 
             self.lastts = ts # time.time()
         else:
             log.warning("empty message")
@@ -281,20 +288,32 @@ class SerialSnooper(asyncio.Protocol):
         return self.connection.read(n)
 
     def process(self, data):
-        oosync = False
+        fail = False
         if len(data) <= 0:
             return
         try:
             log.debug(f"Checking as {self.framer.curMode()}")
-            oosync = self.framer.myProcessIncomingPacket(data, unit=None, single=True)
+            fail = self.framer.myProcessIncomingPacket(data, unit=None, single=True)
             pass
         except (IndexError, TypeError,KeyError) as e:
-            print(e)
+            log.error(e)
+            fail = True
             pass
-        return oosync
+        if fail:
+            tim = time.time()
+            if self.oosync: log.info(f"still out of sync {tim - self.oosync_startts}")
+            else: 
+                log.info("detected new out of sync situation")
+                self.oosync_startts = tim
+        else: 
+            if self.oosync: 
+                log.info(f"out of sync situation cleared afer {time.time() - self.oosync_startts}s")
+                self.oosync_startts = 0
+        self.oosync = fail
 
 
     def read(self):
+        #log.info(f"read function called - UNEXPECTED")
         self.process(self.read_raw())
 
 """ ================== the Modbus Server ========================
@@ -418,4 +437,5 @@ if __name__ == "__main__":
 
     sys.exit(0)
        
+    
     
