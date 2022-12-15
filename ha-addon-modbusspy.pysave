@@ -76,7 +76,6 @@ cur_hr_address = None
 cur_hr_len = 0
 cur_ir_address = None
 cur_ir_len = 0
-glob_write_addresses = {}
 
 
 class myModbusRtuFramer(ModbusRtuFramer):
@@ -201,7 +200,7 @@ class SerialSnooper(asyncio.Protocol):
                     else: log.info(f"ignoring out of sync data: {data[:10]} duration: {duration}")
             else:
                 log.debug(f"potential start of frame or continuation data {data}")
-                self.process(data)
+                self.oosync = self.process(data)
                 #self.oosync = (ts - self.lastts) <0.3 #< 3*(1*10) / float(baud) 
             self.lastts = ts # time.time()
         else:
@@ -222,7 +221,6 @@ class SerialSnooper(asyncio.Protocol):
     def master_packet_callback(self, *args, **kwargs):
         global cur_hr_len, cur_ir_len
         global cur_hr_address, cur_ir_address
-        global glob_write_addresses
         arg = 0
         log.debug(f"master packet callback args: {args} kwargs: {kwargs} ")
         for msg in args:
@@ -253,8 +251,6 @@ class SerialSnooper(asyncio.Protocol):
             if msg.function_code in (3, 4,): log.debug(f"{t1} {t2} {t3} {t4} {t5}")
             else: 
                 if LOG_INFO_WRITE: log.info(f"{t1} {t2} {t3} {t4} {t5}")
-                glob_write_addresses[msg.address] = msg.function_code
-                if LOG_INFO_WRITE and (len(glob_write_addresses)>1): log.info(f"write addresses = {glob_write_addresses}")
 
 
     def slave_packet_callback(self, *args, **kwargs):
@@ -311,13 +307,13 @@ class SerialSnooper(asyncio.Protocol):
                 self.oosync_startts = tim
         else: 
             if self.oosync: 
-                log.info(f"out of sync situation cleared afer {time.time() - self.oosync_startts}s - loglevel:{LOGLEVEL} info_detail: {INFO_LOG}")
+                log.info(f"out of sync situation cleared afer {tim - self.oosync_startts}s")
                 self.oosync_startts = 0
         self.oosync = fail
 
 
     def read(self):
-        #log.info(f"read function called - UNEXPECTED")
+        log.info(f"read function called - UNEXPECTED")
         self.process(self.read_raw())
 
 """ ================== the Modbus Server ========================
@@ -430,7 +426,6 @@ if __name__ == "__main__":
         if value: hr_datablock.setValues(int(key)+1, value)
 
     log.info(f"device: {DEVICE}; baud: {BAUD}; tcp port: {TCPPORT}; resync gap: {RESYNC_GAP}s")
-    log.info(f"logging style: level:{LOGLEVEL} info_detail:{INFO_LOG}")
     run_args = setup_server( setup_args() )
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -442,5 +437,4 @@ if __name__ == "__main__":
 
     sys.exit(0)
        
-    
     
